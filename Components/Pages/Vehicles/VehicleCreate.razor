@@ -1,0 +1,113 @@
+﻿@page "/vehicles/create"
+@rendermode InteractiveServer
+
+@using AutoTrackerWeb.Models.Vehicles
+@using AutoTrackerWeb.Services.Interfaces
+
+@inject IVehicleService VehicleService
+@inject NavigationManager Navigation
+
+<h3>Registrar vehicluo</h3>
+
+<EditForm Model="vehicle" OnValidSubmit="CreateVehicle">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label class="form-label">Placa</label>
+        <InputText class="form-control"
+                    @bind-Value="vehicle.Plate"
+                    placeholder="Ej. ABC123"/>
+
+        <ValidationMessage For="() => vehicle.Plate" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Marca</label>
+        <InputText class="form-control"
+                    @bind-Value="vehicle.Brand"
+                    placeholder="Ej. Toyota"/>
+
+        <ValidationMessage For="() => vehicle.Brand" />
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">Model</label>
+        <InputText class="form-control"
+                    @bind-Value="vehicle.Model"
+                    placeholder="Ej. Corolla"/>
+
+        <ValidationMessage For="() => vehicle.Model" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Año</label>
+        <InputText class="form-control"
+                     @bind-Value="vehicle.Year"
+                     placeholder="Ej. 2019"/>
+
+        <ValidationMessage For="() => vehicle.Year" />
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    <button type="submit"
+            class="btn btn-primary"
+            disabled="@isSubmitting">
+
+            @(isSubmitting ? "Registrando..." : "Registrar vehiculo")
+    </button>
+
+    <button type="button"
+            class="btn btn-secondary ms-2"
+            @onclick="Cancel"
+            disabled="@isSubmitting">
+            
+            Cancelar
+    </button>
+
+</EditForm>
+
+@code {
+    private CreateVehicleDto vehicle = new();
+
+    private bool isSubmitting;
+
+    private string? errorMessage;
+
+    private async Task CreateVehicle()
+    {
+        isSubmitting = true;
+        errorMessage = null;
+
+        try
+        {
+            var result = await VehicleService.CreateAsync(vehicle);
+
+            if (result is null)
+            {
+                errorMessage = "No fue posible registrar el vehiculo";
+                return;
+            }
+
+            Navigation.NavigateTo("/vehicles");
+        }
+        catch(HttpRequestException)
+        {
+            errorMessage = "No fue posible conectar con el servidor";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/vehicles");
+    }
+}

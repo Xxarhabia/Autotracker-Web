@@ -1,0 +1,142 @@
+﻿@page "/vehicles"
+@rendermode InteractiveServer
+
+@using AutoTrackerWeb.Models.Vehicles
+@using AutoTrackerWeb.Services.Interfaces
+
+@inject IVehicleService VehicleService
+
+<h1>Vehiculos</h1>
+
+<div class="mb-3">
+    <label class="form-label">Buscar por placa</label>
+    
+    <div class="input-group">
+        <input class="form-control"
+                @bind="searchPlate"
+                placeholder="Ej. ABC123"/>
+
+        <button class="btn btn-primary"
+                @onclick="Search">
+            Buscar
+        </button>
+
+        <button class="btn btn-secondary"
+                @onclick="CleanSearch">
+            Limpiar
+        </button>
+    </div>
+</div>
+
+@if (isLoading)
+{
+    <p>Cargando vehiculos...</p>
+}
+else if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+else if (vehicles.Count == 0)
+{
+    <p>No se encontraron vehiculos</p>    
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <td>Placa</td>
+                <td>Marca</td>
+                <td>Modelo</td>
+                <td>Año</td>
+                <td>Motor</td>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var vehicle in vehicles)
+            {
+                <tr>
+                    <td>@vehicle.Plate</td>
+                    <td>@vehicle.Brand</td>
+                    <td>@vehicle.Model</td>
+                    <td>@vehicle.Year</td>
+                    <td>
+                        @(vehicle.EngineOn ? "Encendido" : "Apagado")
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<VehicleDto> vehicles = [];
+
+    private string searchPlate = string.Empty;
+
+    private string? errorMessage;
+
+    private bool isLoading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVehicles();
+    }
+
+    private async Task Search()
+    {
+        if (string.IsNullOrWhiteSpace(searchPlate))
+        {
+            await LoadVehicles();
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            var vehicle = await VehicleService.GetByPlateAsync(searchPlate.Trim());
+
+            vehicles = vehicle is null ? [] : [vehicle];
+        }
+        catch(HttpRequestException)
+        {
+            vehicles = [];
+            errorMessage = "No fue posible consultar en vehiculo";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CleanSearch()
+    {
+        searchPlate = string.Empty;
+        await LoadVehicles();
+    }
+
+    private async Task LoadVehicles()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            vehicles = await VehicleService.GetAllAsync();
+        }
+        catch(HttpRequestException)
+        {
+            vehicles = [];
+            errorMessage = "No fue posible cargar los vehiculos";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
