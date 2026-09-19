@@ -1,7 +1,112 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+@using AutoTrackerWeb.Models.Vehicles
+@using AutoTrackerWeb.Models.Drivers
+@using AutoTrackerWeb.Services.Interfaces
 
-<h1>Hello, world!</h1>
+@inject IVehicleService VehicleService
+@inject IDriverService DriverService
 
-Welcome to your new app.
+<PageTitle>Inicio . AutoTracker</PageTitle>
+
+<div class="at-page">
+    <div class="at-page-header">
+        <div>
+            <h1>Inicio</h1>
+            <p class="at-subtitle">Resumen general de la flota</p>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <p class="at-isLoading">Cargando datos...</p>
+    }
+    else if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+    else
+    {
+        <div class="at-stats-grid">
+            <div class="at-stat-card">
+                <div class="atstat-value">@vehicles.Count</div>
+                <div class="at-stat-label">Vehiculos registrados</div>
+            </div>
+
+            <div class="at-stat-card">
+                <div class="at-stat-value">@drivers.Count</div>
+                <div class="at-stat-label">Conductores registrados</div>
+            </div>
+            
+            <div class="at-stat-card at-stat-card--accent">
+                <div class="at-stat-value">@vehiclesOn.Count</div>
+                <div class="at-stat-label">Vehiculos encendidos</div>
+            </div>
+        </div>
+
+        <div class="at-card">
+            <h3>Vehiculos encendidos</h3>
+
+            @if (vehiclesOn.Count == 0)
+            {
+                <div class="at-empty">
+                    <p>No hay vehiculos encendidos en este momento.</p>
+                </div>
+            }
+            else
+            {
+                <div class="at-table-wrap">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Placa</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var vehicle in vehiclesOn)
+                            {
+                                <tr>
+                                    <td class="at-plate">@vehicle.Plate</td>
+                                    <td>@vehicle.Brand</td>
+                                    <td>@vehicle.Model</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
+
+</div>
+
+@code {
+    private List<VehicleDto> vehicles = [];
+    private List<DriverListDto> drivers = [];
+    private List<VehicleDto> vehiclesOn = [];
+
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            vehicles = await VehicleService.GetAllAsync();
+            drivers = await DriverService.GetAllAsync();
+            vehiclesOn = vehicles.Where(v => v.EngineOn).ToList();
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage = "No fue posible cargar los datos del panel";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+}

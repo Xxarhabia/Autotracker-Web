@@ -56,6 +56,7 @@ h1, h2, h3, h4 {
 
 a {
     color: var(--at-primary);
+    text-decoration: none
 }
 
 /* --- Layout helpers --- */
@@ -390,3 +391,40 @@ h1:focus {
         border-bottom-color: var(--at-accent);
     }
 
+/* --- Stat cards (Home) --- */
+
+.at-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.at-stat-card {
+    background: var(--at-surface);
+    border: 1px solid var(--at-border);
+    border-radius: var(--at-radius-md);
+    box-shadow: var(--at-shadow);
+    padding: 1.25rem 1.5rem;
+}
+
+.at-stat-value {
+    font-family: var(--at-font-display);
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.35rem;
+}
+
+.at-stat-label {
+    color: var(--at-muted);
+    font-size: 0.85rem;
+}
+
+.at-stat-card--accent .at-stat-value {
+    color: var(--at-accent-ink);
+}
+
+.at-card h3 {
+    margin-bottom: 1rem;
+}
