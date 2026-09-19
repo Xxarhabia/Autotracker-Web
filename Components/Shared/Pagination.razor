@@ -23,9 +23,9 @@
 
         <div class="at-pagination-controls">
             <button class="btn btn-secondary"
-                    disabled="@(CurrentPage <= 1)"
+                    disabled="@(CurrentPage > 1)"
                     @onclick="() => GoTo(CurrentPage + 1)">
-                Anterior
+                Siguiente
             </button>
         </div>
     </div>

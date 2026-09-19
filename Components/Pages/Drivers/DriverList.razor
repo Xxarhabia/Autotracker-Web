@@ -71,7 +71,7 @@
                     </thead>
 
                     <tbody>
-                        @foreach(var driver in drivers)
+                        @foreach(var driver in pagedDrivers)
                         {
                             <tr>
                                 <td class="at-plate">@driver.Document</td>
@@ -132,6 +132,8 @@
                     </tbody>
                 </table>
             </div>
+
+            <Pagination CurrentPage="currentPage" TotalPages="totalPages" OnPageChange="OnPageChanged" />
         }
     </div>
 </div>
@@ -148,6 +150,19 @@
 
     private string? feedbackMessage;
     private bool feedbackIsError;
+
+    private const int PageSize = 8;
+    private int currentPage = 1;
+    private int totalPages => Math.Max(1, (int)Math.Ceiling(drivers.Count / (double)PageSize));
+    private List<DriverListDto> pagedDrivers => drivers
+        .Skip((currentPage - 1) * PageSize)
+        .Take(PageSize)
+        .ToList();
+
+    private void OnPageChanged(int page)
+    {
+        currentPage = page;
+    }
 
     protected override async Task OnInitializedAsync()
     {
