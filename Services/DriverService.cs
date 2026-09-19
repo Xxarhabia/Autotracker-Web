@@ -12,19 +12,37 @@ namespace AutoTrackerWeb.Services
             _httpClient = httpClient;
         }
 
-        public Task<DriverDto?> CreateAsync(CreateDriverDto dto)
+        public async Task<DriverDto?> CreateAsync(CreateDriverDto dto)
         {
-            throw new NotImplementedException();
+            var response = await _httpClient.PostAsJsonAsync(
+                "api/drivers",
+                dto
+            );
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            return await response.Content.ReadFromJsonAsync<DriverDto>();
+
         }
 
-        public Task<List<DriverDto>> GetAllAsync()
+        public async Task<List<DriverListDto>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await _httpClient.GetFromJsonAsync<List<DriverListDto>>(
+                "api/drivers"
+            ) ?? [];
         }
 
-        public Task<DriverDto?> GetByDocumentAsync(string document)
+        public async Task<DriverListDto?> GetByDocumentAsync(string document)
         {
-            throw new NotImplementedException();
+            var response = await _httpClient.GetAsync(
+                $"api/drivers/{document}"    
+            );
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            return await response.Content.ReadFromJsonAsync<DriverListDto>();
         }
 
         public Task<DriverDto?> AssignVehicleAsync(string document, string plate)

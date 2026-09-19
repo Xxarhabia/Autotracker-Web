@@ -13,6 +13,11 @@ builder.Services.AddHttpClient<IVehicleService, VehicleService>(client =>
     client.BaseAddress = new Uri("http://localhost:5099/");
 });
 
+builder.Services.AddHttpClient<IDriverService, DriverService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5099/");
+});
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 

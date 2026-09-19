@@ -7,70 +7,70 @@
 @inject IVehicleService VehicleService
 @inject NavigationManager Navigation
 
-<h3>Registrar vehicluo</h3>
+<PageTitle>Agregar vehiculo . AutoTracker</PageTitle>
 
-<EditForm Model="vehicle" OnValidSubmit="CreateVehicle">
-    <DataAnnotationsValidator />
-
-    <div class="mb-3">
-        <label class="form-label">Placa</label>
-        <InputText class="form-control"
-                    @bind-Value="vehicle.Plate"
-                    placeholder="Ej. ABC123"/>
-
-        <ValidationMessage For="() => vehicle.Plate" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Marca</label>
-        <InputText class="form-control"
-                    @bind-Value="vehicle.Brand"
-                    placeholder="Ej. Toyota"/>
-
-        <ValidationMessage For="() => vehicle.Brand" />
-    </div>
-    
-    <div class="mb-3">
-        <label class="form-label">Model</label>
-        <InputText class="form-control"
-                    @bind-Value="vehicle.Model"
-                    placeholder="Ej. Corolla"/>
-
-        <ValidationMessage For="() => vehicle.Model" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Año</label>
-        <InputText class="form-control"
-                     @bind-Value="vehicle.Year"
-                     placeholder="Ej. 2019"/>
-
-        <ValidationMessage For="() => vehicle.Year" />
-    </div>
-
-    @if (!string.IsNullOrWhiteSpace(errorMessage))
-    {
-        <div class="alert alert-danger">
-            @errorMessage
+<div class="at-page">
+    <div class="at-page-header">
+        <div>
+            <h1>Agregar vehiculos</h1>
+            <p class="at-subtitle">Registrar un vehiculo nuevo en la flota</p>
         </div>
-    }
+    </div>
 
-    <button type="submit"
-            class="btn btn-primary"
-            disabled="@isSubmitting">
+    <div class="at-card at-form-card">
+        <EditForm Model="vehicle" OnValidSubmit="CreateVehicle">
+            <DataAnnotationsValidator />
 
-            @(isSubmitting ? "Registrando..." : "Registrar vehiculo")
-    </button>
+            <div class="mb-3">
+                <label class="form-control">Placa</label>
+                <InputText class="form-control"
+                            @bind-Value="vehicle.Plate"
+                            placeholder="Ej. ABC123"/>
+                <ValidationMessage For="() => vehicle.Plate" />
+            </div>
 
-    <button type="button"
-            class="btn btn-secondary ms-2"
-            @onclick="Cancel"
-            disabled="@isSubmitting">
-            
-            Cancelar
-    </button>
+            <div class="mb-3">
+                <label class="form-control">Marca</label>
+                <InputText class="form-control"
+                            @bind-Value="vehicle.Brand"
+                            placeholder="Ej. Toyota"/>
+                <ValidationMessage For="() => vehicle.Brand" />
+            </div>
 
-</EditForm>
+            <div class="mb-3">
+                <label class="form-control">Modelo</label>
+                <InputText class="form-control"
+                            @bind-Value="vehicle.Model"
+                            placeholder="Ej. Corolla"/>
+                <ValidationMessage For="() => vehicle.Model" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-control">Año</label>
+                <InputText class="form-control"
+                            @bind-Value="vehicle.Year"
+                            placeholder="Ej. 2019"/>
+                <ValidationMessage For="() => vehicle.Year" />
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+
+            <div class="at-form-actions">
+                <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                    @(isSubmitting ? "Registrando..." : "Registrar vehiculo")
+                </button>
+
+                <button type="button" class="btn btn-secondary" @onclick="Cancel" disabled="@isSubmitting">
+                    Cancelar
+                </button>
+            </div>
+
+        </EditForm>
+    </div>
+</div>
 
 @code {
     private CreateVehicleDto vehicle = new();

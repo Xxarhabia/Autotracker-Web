@@ -1,5 +1,170 @@
-﻿<h3>DriverList</h3>
+﻿@page "/drivers"
+@rendermode InteractiveServer
+
+@using AutoTrackerWeb.Models.Drivers
+@using AutoTrackerWeb.Services.Interfaces
+
+@inject IDriverService DriverService
+
+<PageTitle>Conductores . AutoTracker</PageTitle>
+
+<div class="at-page">
+    <div class="at-page-header">
+        <div>
+            <h1>Conductores</h1>
+            <p class="at-subtitle">@drivers.Count conductor(es) registrado(s)</p>
+        </div>
+        <a class="btn btn-primary" href="/drivers/create">Agregar conductor</a>
+    </div>
+
+    <div class="at-search">
+        <input class="form-control"
+               @bind="searchDocument"
+               @bind:event="oninput"
+               @onkeyup="HandleSearchKeyUp"
+               placeholder="Filtrar por documento"/>
+        
+        <button class="btn btn-primary" onclick="Search">
+            Buscar
+        </button>
+
+        @if (!string.IsNullOrWhiteSpace(searchDocument))
+        {
+            <button class="btn btn-secondary" @onclick="CleanSearch">
+                Limpiar
+            </button>
+        }
+    </div>
+
+    <div class="at-card">
+        @if (isLoading)
+        {
+            <p class="at-loading">Cargando conductores...</p>
+        }
+        else if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+        else if (drivers.Count == 0)
+        {
+            <div class="at-empty">
+                <p>No se encontraron conductores.</p>
+            </div>
+        }
+        else
+        {
+            <div class="at-table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Nombre</th>
+                            <th>vehiculo asignado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach(var driver in drivers)
+                        {
+                            <tr>
+                                <td class="at-plate">@driver.Document</td>
+                                <td>@driver.FullName</td>
+                                <td>
+                                    @if (string.IsNullOrWhiteSpace(driver.VehiclePlate))
+                                    {
+                                        <span class="at-status at-status--off">
+                                            <span class="at-status-dot"></span>
+                                            Sin asignar
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="at-status at-status--on">
+                                            <span class="at-status-dot"></span>
+                                            @driver.VehiclePlate
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
 
 @code {
+    private List<DriverListDto> drivers = [];
+    private string searchDocument = string.Empty;
+    private string? errorMessage;
+    private bool isLoading;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDrivers();
+    }
+
+    private async Task HandleSearchKeyUp(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Search();
+        }
+    }
+
+    private async Task Search()
+    {
+        if (string.IsNullOrWhiteSpace(searchDocument))
+        {
+            await LoadDrivers();
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var driver = await DriverService.GetByDocumentAsync(searchDocument.Trim());
+
+            drivers = driver is null ? [] : [driver];
+        }
+        catch (HttpRequestException)
+        {
+            drivers = [];
+            errorMessage = "No fue posible consultar el conductor";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CleanSearch()
+    {
+        searchDocument = string.Empty;
+        await LoadDrivers();
+    }
+
+    private async Task LoadDrivers()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            drivers = await DriverService.GetAllAsync();
+        }
+        catch(HttpRequestException)
+        {
+            drivers = [];
+            errorMessage = "No fue posible cargar los conductores";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
 }

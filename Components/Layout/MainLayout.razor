@@ -1,9 +1,23 @@
 ﻿@inherits LayoutComponentBase
 
-@Body
+<header class="at-navbar">
+    <div class="at-navbar-inner">
+        <a class="at-navbar-brand" href="/">AutoTracker</a>
+
+        <nav class="at-nav-link">
+            <NavLink class="at-nav-link" href="/" Match="NavLinkMatch.All">Inicio</NavLink>
+            <NavLink class="at-nav-link" href="/vehicles">Vehiculos</NavLink>
+            <NavLink class="at-nav-link" href="/drivers">Conductores</NavLink>
+        </nav>
+    </div>
+</header>
+
+<main>
+    @Body
+</main>
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+    <span class="dismiss">X</span>
 </div>

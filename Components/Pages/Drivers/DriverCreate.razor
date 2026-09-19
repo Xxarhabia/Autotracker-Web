@@ -1,5 +1,103 @@
-﻿<h3>DriverCreate</h3>
+﻿@page "/drivers/create"
+@rendermode InteractiveServer
+
+@using AutoTrackerWeb.Models.Drivers
+@using AutoTrackerWeb.Services.Interfaces
+
+@inject IDriverService DriverService
+@inject NavigationManager Navigation
+
+<PageTitle>Agregar conductor . AutoTracker</PageTitle>
+
+<div class="at-page">
+    <div class="at-page-header">
+        <div>
+            <h1>Agregar conductor</h1>
+            <p class="at-subtitle">Registra un conductor nuevo</p>
+        </div>
+    </div>
+
+    <div class="at-card at-form-card">
+        <EditForm Model="driver" OnValidSubmit="CreateDriver">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <lable class="form-label">Nombre</lable>
+                <InputText class="form-control" 
+                           @bind-Value="driver.Name"
+                           placeholder="Ej. Juan Perez"/>
+                <ValidationMessage For="() => driver.Name" />
+            </div>
+
+            <div class="mb-3">
+                <lable class="form-label">Documento</lable>
+                <InputText class="form-control" 
+                           @bind-Value="driver.Document"
+                           placeholder="Ej. 1002090789"/>
+                <ValidationMessage For="() => driver.Document" />
+            </div>
+
+            <div class="mb-3">
+                <lable class="form-label">Telefono</lable>
+                <InputText class="form-control" 
+                           @bind-Value="driver.Phone"
+                           placeholder="Ej. 3001234567"/>
+                <ValidationMessage For="() => driver.Phone" />
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+
+            <div class="at-form-actions">
+                <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                    @(isSubmitting ? "Registrando..." : "Registrar conductor")
+                </button>
+
+                <button type="button" class="btn btn-secondary" @onclick="Cancel" disabled="@isSubmitting">
+                    Cancelar
+                </button>
+            </div>
+
+        </EditForm>
+    </div>
+</div>
 
 @code {
+    private CreateDriverDto driver = new();
+    private bool isSubmitting;
+    private string? errorMessage;
 
+    private async Task CreateDriver()
+    {
+        isSubmitting = true;
+        errorMessage = null;
+
+        try
+        {
+            var result = await DriverService.CreateAsync(driver);
+
+            if (result is null)
+            {
+                errorMessage = "No fue posible registrar el conductor";
+                return;
+            }
+
+            Navigation.NavigateTo("/drivers");
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage = "No fue posible conectar con el servidor";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/drivers");
+    }
 }
