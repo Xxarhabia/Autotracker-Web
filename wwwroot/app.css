@@ -428,3 +428,23 @@ h1:focus {
 .at-card h3 {
     margin-bottom: 1rem;
 }
+
+/* --- Asignación de vehículo (Conductores) --- */
+
+.at-assign-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.at-assign-select {
+    min-width: 190px;
+    width: auto;
+}
+
+.alert-success {
+    background: var(--at-success-bg);
+    color: var(--at-success);
+    border-color: rgba(60, 122, 90, 0.25);
+}

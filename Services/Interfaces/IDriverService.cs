@@ -7,7 +7,7 @@ namespace AutoTrackerWeb.Services.Interfaces
         Task<List<DriverListDto>> GetAllAsync();
         Task<DriverListDto?> GetByDocumentAsync(string document);
         Task<DriverDto?> CreateAsync(CreateDriverDto dto);
-        Task<DriverDto?> AssignVehicleAsync(string document, string plate);
-        Task<DriverDto?> UnassignVehicleAsync(string document);
+        Task<(bool Success, string Message, DriverDto dto)> AssignVehicleAsync(string document, string plate);
+        Task<(bool Success, string Message, DriverDto dto)> UnassignVehicleAsync(string document);
     }
 }

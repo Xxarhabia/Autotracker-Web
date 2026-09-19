@@ -2,9 +2,11 @@
 @rendermode InteractiveServer
 
 @using AutoTrackerWeb.Models.Drivers
+@using AutoTrackerWeb.Models.Vehicles
 @using AutoTrackerWeb.Services.Interfaces
 
 @inject IDriverService DriverService
+@inject IVehicleService VehicleService
 
 <PageTitle>Conductores . AutoTracker</PageTitle>
 
@@ -37,6 +39,11 @@
     </div>
 
     <div class="at-card">
+        @if (!string.IsNullOrWhiteSpace(feedbackMessage))
+        {
+            <div class="alert @(feedbackIsError ? "alert-danger" : "alert-success")">@feedbackMessage</div>
+        }
+
         @if (isLoading)
         {
             <p class="at-loading">Cargando conductores...</p>
@@ -85,6 +92,41 @@
                                         </span>
                                     }
                                 </td>
+                                <td>
+                                    @if (string.IsNullOrWhiteSpace(driver.VehiclePlate))
+                                    {
+                                        var available = AvailabeVehiclesFor(driver);
+
+                                        if (available.Count == 0)
+                                        {
+                                            <span class="at-subtitle">Sin vehiculos disponibles</span>
+                                        }
+                                        else
+                                        {
+                                            <div class="at-assign-row">
+                                                <select class="form-control at-assign-select"
+                                                        value="@GetSelectedPlate(driver.Document)"
+                                                        @onchange="e => SetSelectedPlate(driver.Document, e.Value?.ToString() ?? string.Empty)">
+                                                    <option value="">Selecciona un vehiculo</option>
+                                                    @foreach (var v in available)
+                                                    {
+                                                        <option value="@v.Plate">@v.Plate - @v.Brand @v.Model</option>
+                                                    }
+                                                </select>
+
+                                                <button class="btn btn-primary" @onclick="() => AssignVehicle(driver.Document)">
+                                                    Asignar
+                                                </button>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-secondary" @onclick="() => UnassignVehicle(driver.Document)">
+                                            Quitar vehiculo
+                                        </button>
+                                    }
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -96,15 +138,73 @@
 
 @code {
     private List<DriverListDto> drivers = [];
+    private List<VehicleDto> vehicles = [];
+    private Dictionary<string, string> selectedPlateByDocument = new();
+
     private string searchDocument = string.Empty;
+
     private string? errorMessage;
     private bool isLoading;
 
+    private string? feedbackMessage;
+    private bool feedbackIsError;
+
     protected override async Task OnInitializedAsync()
     {
+        vehicles = await VehicleService.GetAllAsync();
         await LoadDrivers();
     }
 
+    private string GetSelectedPlate(string document) =>
+        selectedPlateByDocument.TryGetValue(document, out var plate) ? plate : string.Empty;
+
+    private void SetSelectedPlate(string document, string plate) =>
+        selectedPlateByDocument[document] = plate;
+
+    private List<VehicleDto> AvailabeVehiclesFor(DriverListDto driver)
+    {
+        var assignedPlate = drivers
+            .Where(d => d.Document != driver.Document && !string.IsNullOrWhiteSpace(d.VehiclePlate))
+            .Select(d => d.VehiclePlate)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return vehicles.Where(v => !assignedPlate.Contains(v.Plate)).ToList();
+    }
+
+    private async Task AssignVehicle(string document)
+    {
+        var plate = GetSelectedPlate(document);
+
+        if (string.IsNullOrWhiteSpace(plate))
+        {
+            feedbackIsError = true;
+            feedbackMessage = "Selecciona un vehículo antes de asignar";
+            return;
+        }
+
+        var (success, message, _) = await DriverService.AssignVehicleAsync(document, plate);
+
+        feedbackIsError = !success;
+        feedbackMessage = success ? "Vehiculo asignado correctamete" : (message ?? "No fue posible asignar el vehiculo");
+
+        if (success)
+        {
+            selectedPlateByDocument[document] = string.Empty;
+            await LoadDrivers();
+        }
+    }
+
+    private async Task UnassignVehicle(string document)
+    {
+        var (success, message, _) = await DriverService.UnassignVehicleAsync(document);
+
+        feedbackIsError = !success;
+        feedbackMessage = success ? "Vehiculo retirado con exito" : (message ?? "No fue posible quitar el vehiculo");
+
+        if (success)
+            await LoadDrivers();
+    }
+    
     private async Task HandleSearchKeyUp(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
     {
         if (e.Key == "Enter")

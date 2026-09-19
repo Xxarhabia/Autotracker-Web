@@ -45,14 +45,50 @@ namespace AutoTrackerWeb.Services
             return await response.Content.ReadFromJsonAsync<DriverListDto>();
         }
 
-        public Task<DriverDto?> AssignVehicleAsync(string document, string plate)
+        public async Task<(bool Success, string Message, DriverDto dto)> AssignVehicleAsync(string document, string plate)
         {
-            throw new NotImplementedException();
+            var response = await _httpClient.PatchAsync(
+                $"api/drivers/{document}/assign/{plate}",
+                new StringContent(string.Empty)
+            );
+
+            if (!response.IsSuccessStatusCode)
+                return (false, await ReadErrorMessageAsync(response), null);
+
+            var driver = await response.Content.ReadFromJsonAsync<DriverDto>();
+            return (true, null, driver);
         }
 
-        public Task<DriverDto?> UnassignVehicleAsync(string document)
+        public async Task<(bool Success, string Message, DriverDto dto)> UnassignVehicleAsync(string document)
         {
-            throw new NotImplementedException();
+            var response = await _httpClient.PatchAsync(
+                $"api/drivers/{document}/unassign",
+                new StringContent(string.Empty)
+            );
+
+            if (!response.IsSuccessStatusCode)
+                return (false, await ReadErrorMessageAsync(response), null);
+
+            var driver = await response.Content.ReadFromJsonAsync<DriverDto>();
+            return (true, null, driver);
+        }
+
+        private static async Task<string> ReadErrorMessageAsync(HttpResponseMessage response)
+        {
+            var raw = await response.Content.ReadAsStringAsync();
+
+            if (string.IsNullOrWhiteSpace(raw))
+                return "Ocurrio un error inesperado";
+
+            try
+            {
+                var text = System.Text.Json.JsonSerializer.Deserialize<string>(raw);
+                return text ?? raw;
+            }
+            catch
+            {
+                return raw;
+            }
         }
     }
 }
