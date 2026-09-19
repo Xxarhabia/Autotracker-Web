@@ -1,0 +1,59 @@
+﻿@if (TotalPages > 1)
+{
+    <div class="at-pagination">
+        <span class="at-pagination-info">
+            Pagina @CurrentPage @TotalPages
+        </span>
+
+        <div class="at-pagination-controls">
+            <button class="btn btn-secondary"
+                    disabled="@(CurrentPage <= 1)"
+                    @onclick="() => GoTo(CurrentPage - 1)">
+                Anterior
+            </button>
+        </div>
+
+        @foreach (var pageNumber in PageNumbers())
+        {
+            <button class="at-page-btn @(pageNumber == CurrentPage ? "active" : "")"
+                    @onclick="() => GoTo(pageNumber)">
+                @pageNumber
+            </button>
+        }
+
+        <div class="at-pagination-controls">
+            <button class="btn btn-secondary"
+                    disabled="@(CurrentPage <= 1)"
+                    @onclick="() => GoTo(CurrentPage + 1)">
+                Anterior
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public int CurrentPage { get; set; }
+    [Parameter, EditorRequired]
+    public int TotalPages { get; set; }
+    [Parameter, EditorRequired]
+    public EventCallback<int> OnPageChange { get; set; }
+
+    private async Task GoTo(int page)
+    {
+        if (page < 1 || page > TotalPages || page == CurrentPage)
+            return;
+
+        await OnPageChange.InvokeAsync(page);
+    }
+
+    private IEnumerable<int> PageNumbers()
+    {
+        int start = Math.Max(1, CurrentPage - 2);
+        int end = Math.Min(TotalPages, start + 4);
+        start = Math.Max(1, end - 4);
+
+        for (int i = start; i <= end; i++)
+            yield return i;
+    }
+}

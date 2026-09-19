@@ -70,7 +70,7 @@
                     </thead>
 
                     <tbody>
-                        @foreach (var vehicle in vehicles)
+                        @foreach (var vehicle in pagedVehicles)
                         {
                             <tr>
                                 <td class="at-plate">@vehicle.Plate</td>
@@ -88,6 +88,8 @@
                     </tbody>
                 </table>
             </div>
+
+            <Pagination CurrentPage="currentPage" TotalPages="totalPages" OnPageChange="OnPageChanged" />
         }
 
     </div>
@@ -102,6 +104,22 @@
     private string? errorMessage;
 
     private bool isLoading;
+
+    private const int PageSize = 8;
+
+    private int currentPage = 1;
+
+    private int totalPages => Math.Max(1, (int)Math.Ceiling(vehicles.Count / (double)PageSize));
+
+    private List<VehicleDto> pagedVehicles => vehicles
+        .Skip((currentPage - 1) * PageSize)
+        .Take(PageSize)
+        .ToList();
+
+    private void OnPageChanged(int page)
+    {
+        currentPage = page;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -133,6 +151,7 @@
             var vehicle = await VehicleService.GetByPlateAsync(searchPlate.Trim());
 
             vehicles = vehicle is null ? [] : [vehicle];
+            currentPage = 1;
         }
         catch(HttpRequestException)
         {
@@ -159,6 +178,7 @@
         try
         {
             vehicles = await VehicleService.GetAllAsync();
+            currentPage = 1;
         }
         catch(HttpRequestException)
         {

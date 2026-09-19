@@ -448,3 +448,50 @@ h1:focus {
     color: var(--at-success);
     border-color: rgba(60, 122, 90, 0.25);
 }
+
+/* --- Paginación --- */
+
+.at-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--at-border);
+}
+
+.at-pagination-info {
+    color: var(--at-muted);
+    font-size: 0.85rem;
+}
+
+.at-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.at-page-btn {
+    min-width: 2.1rem;
+    height: 2.1rem;
+    padding: 0;
+    border: 1px solid var(--at-border);
+    background: var(--at-surface);
+    color: var(--at-ink);
+    border-radius: var(--at-radius-sm);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+    .at-page-btn:hover {
+        background: var(--at-bg);
+    }
+
+    .at-page-btn.active {
+        background: var(--at-primary);
+        color: var(--at-primary-contrast);
+        border-color: var(--at-primary);
+    }
